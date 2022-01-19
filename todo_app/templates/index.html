@@ -9,8 +9,8 @@
   </div>
   <!-- <div class="jumbotron"> -->
     <h2 class="add-item-input add-item-submit" id="addItemInputSubmit">Add Item</h1>
-      <input type="text" name="item-input" value=""></input>
-      <button type="submit">Add item</button>
+    <input type="text" name="item-input" value=""></input>
+    <button type="submit">Add item</button>
   <!-- </div> -->
   <br>
   <br>
@@ -19,11 +19,12 @@
       <h2>Items</h2>
       <ul class="list-group mb-4">
         {% for item in items %} 
-            <li>
-                {{ item.title }} - {{ item.status }}
-            </li> 
+        <li>
+          {{ item.title }} - {{ item.status }}
+        </li> 
         {% endfor %} 
       </ul>
     </div>
   </div>
+</form>
 {% endblock %}
