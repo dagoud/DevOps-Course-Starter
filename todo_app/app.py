@@ -20,7 +20,7 @@ def add_item_to_list():
 
     itemTitle = request.form.get('item-input')
     if itemTitle != "":
-        item = add_item(itemTitle)
+        add_item(itemTitle)
         
     
     return redirect(url_for('index'))
