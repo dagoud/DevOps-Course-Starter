@@ -17,10 +17,7 @@ def index():
 
 @app.route('/item', methods=['POST']) 
 def add_item_to_list():
-
     itemTitle = request.form.get('item-input')
-    if itemTitle != "":
-        add_item(itemTitle)
+    add_item(itemTitle)
         
-    
     return redirect(url_for('index'))
