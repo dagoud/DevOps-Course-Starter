@@ -1,0 +1,91 @@
+- name: Connect to managed nodes
+  hosts: my-managed-nodes
+  remote_user: ec2-user
+
+  tasks:
+  - name : Install Git and Python3 on Managed Node
+    ansible.builtin.yum:
+      name: 
+        - git
+        - python3
+      state: latest
+    become: yes
+  
+  - name : Capture Git version on Managed Node
+    ansible.builtin.shell: git version
+    register: git_version
+  
+  - debug:  
+      var: git_version.stdout_lines
+
+  - name : Capture Python3 version on Managed Node
+    ansible.builtin.shell: python3 --version
+    register: py_version
+  
+  - debug:  
+      var: py_version.stdout_lines
+
+  - name : Capture Curl version on Managed Node
+    ansible.builtin.shell: curl --version
+    register: curl_version
+  
+  - debug:  
+      var: curl_version.stdout_lines
+
+  - name: Install Poetry
+    # ansible.builtin.shell: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python3 -
+    ansible.builtin.shell: curl -sSL https://install.python-poetry.org | python3 -
+    args: 
+      creates: ./.local/bin/poetry
+    # ansible.builtin.shell: curl -sSL https://install.python-poetry.org | python3 - --uninstall
+
+  - name : Capture Poetry version on Managed Node
+  # TODO - change this to add to PATH
+    ansible.builtin.shell: poetry --version
+    register: poetry_version
+    environment:
+      PATH: "~/.local/bin:{{ ansible_env.PATH }}"
+  
+  - debug:  
+      var: poetry_version.stdout_lines
+
+  - name: Create todoapp directory
+    ansible.builtin.file:
+      path: /opt/todoapp
+      state: directory
+      mode: '777'
+    become: yes
+
+  - name: Checkout latest version of todoapp
+    ansible.builtin.git:
+      repo: 'https://github.com/dagoud/DevOps-Course-Starter.git' 
+      # repo: git@github.com:dagoud/DevOps-Course-Starter.git 
+      dest: /opt/todoapp
+      version: module-4/exercise
+    
+  - name : Change dir to todoapp on Managed Node
+    ansible.builtin.shell: git status
+    args:
+      chdir: /opt/todoapp
+    register: todoapp_gs
+  
+  - debug:  
+      var: todoapp_gs.stdout_lines
+
+  - name : Poetry install dependencies for todoapp
+    ansible.builtin.shell: poetry install
+    args:
+      chdir: /opt/todoapp
+    register: todoapp_install
+    environment:
+      PATH: "~/.local/bin:{{ ansible_env.PATH }}"
+
+  - debug:  
+      var: todoapp_install.stdout_lines
+
+  # TODO: add .env.j2 to Controller VM?
+  # TODO: add vars_prompt section - ansible will prompt to enter secret values {{secret-key}} for e.g.
+  # TODO: try out Ansible_vault
+  # - name: Create .env file on the host
+
+
