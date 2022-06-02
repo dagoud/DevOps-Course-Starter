@@ -1,6 +1,25 @@
+# TODO: add .env.j2 to Controller VM?
+# connect to a 2nd .ini file for installing git and pulling repo on controller node
+
+
 - name: Connect to managed nodes
   hosts: my-managed-nodes
   remote_user: ec2-user
+
+  # TODO: stretch goal - try out Ansible_vault
+  vars_prompt:
+    - name: flask_env
+      prompt: What is the flask_env?
+      private: no
+      default: development
+
+    - name: secret_key
+      prompt: What is your secret key?
+      default: secret_key
+
+    - name: trello_token
+      prompt: What is your trello api token?
+      default: trello_token
 
   tasks:
   - name : Install Git and Python3 on Managed Node
@@ -83,9 +102,19 @@
   - debug:  
       var: todoapp_install.stdout_lines
 
-  # TODO: add .env.j2 to Controller VM?
-  # TODO: add vars_prompt section - ansible will prompt to enter secret values {{secret-key}} for e.g.
-  # TODO: try out Ansible_vault
-  # - name: Create .env file on the host
+  - name: Template a .env file to /opt/todoapp/.env
+    ansible.builtin.template:
+      src: ~/.env.j2
+      dest: /opt/todoapp/.env
+  
+  - name: print git status - confirm .env not displayed
+    ansible.builtin.shell: git status
+    args:
+      chdir: /opt/todoapp
+    register: println_gs
+  
+  - debug:  
+      var: println_gs.stdout_lines
 
-
+# Start the app
+# Set the host to "0.0.0.0" - use systemd
