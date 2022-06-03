@@ -52,3 +52,22 @@ You should see output similar to the following:
  * Debugger PIN: 226-556-590
 ```
 Now visit [`http://localhost:5000/`](http://localhost:5000/) in your web browser to view the app.
+
+## Running the todo app on a host VM via Ansible
+
+First sign in to the control node - see __my-ansible-inventory.ini__ for control node ip:
+
+```
+[my-control-nodes]
+18.135.243.129
+```
+
+Next open a terminal and run:
+
+```
+ansible-playbook my-ansible-playbook.yml -i my-ansible-inventory.ini
+```
+
+This will run the playbook (also created in this repo - see __my-ansible-managed-playbook.yml__). The playbook installs poetry and python 3, pulls down the latest of this repo, switches to this feature branch, then starts the todoapp.
+
+You will be able to view the todoapp running on http://18.135.228.220:5000 if all has run successfully.

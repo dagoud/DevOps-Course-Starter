@@ -78,7 +78,6 @@
   - name: Checkout latest version of todoapp
     ansible.builtin.git:
       repo: 'https://github.com/dagoud/DevOps-Course-Starter.git' 
-      # repo: git@github.com:dagoud/DevOps-Course-Starter.git 
       dest: /opt/todoapp
       version: module-4/exercise
     
@@ -107,6 +106,15 @@
       src: ~/.env.j2
       dest: /opt/todoapp/.env
   
+  - name : Print .env contents to confirm written variables correctly
+    ansible.builtin.shell: 
+      cmd: cat /opt/todoapp/.env
+      chdir: /
+    register: cat_dotenv
+
+  - debug:  
+      var: cat_dotenv.stdout_lines
+
   - name: print git status - confirm .env not displayed
     ansible.builtin.shell: git status
     args:
@@ -116,5 +124,25 @@
   - debug:  
       var: println_gs.stdout_lines
 
-# Start the app
-# Set the host to "0.0.0.0" - use systemd
+  - name: Copy todoapp.service to etc/systemd dir
+    ansible.builtin.shell: 
+      cmd: cp todoapp.service /etc/systemd/system/todoapp.service
+      chdir: /opt/todoapp
+    become: yes
+  
+  - name : Print contents to confirm systemd todoapp.service written correctly
+    ansible.builtin.shell: 
+      cmd: cat todoapp.service
+      chdir: /etc/systemd/system
+    register: cat_todoappservice
+
+  - debug:  
+      var: cat_todoappservice.stdout_lines
+  
+  - name: Start todo app via systemd
+    ansible.builtin.systemd:
+      name: todoapp.service
+      state: started
+      daemon_reload: yes
+    become: yes
+
