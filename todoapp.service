@@ -3,4 +3,4 @@ Description=My To-Do App
 [Service]
 User=ec2-user
 WorkingDirectory=/opt/todoapp
-ExecStart=~/.local/bin/poetry run flask run -h "0.0.0.0"
+ExecStart=poetry run flask run -h "0.0.0.0"
