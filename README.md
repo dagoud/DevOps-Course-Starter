@@ -70,4 +70,4 @@ ansible-playbook my-ansible-playbook.yml -i my-ansible-inventory.ini
 
 This will run the playbook (also created in this repo - see __my-ansible-managed-playbook.yml__). The playbook installs poetry and python 3, pulls down the latest of this repo, switches to this feature branch, then starts the todoapp.
 
-You will be able to view the todoapp running on http://18.135.228.220:8000 if all has run successfully.
+You will be able to view the todoapp running on http://18.135.228.220:80 if all has run successfully.
