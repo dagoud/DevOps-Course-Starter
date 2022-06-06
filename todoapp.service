@@ -1,6 +1,9 @@
 [Unit]
 Description=My To-Do App
+Requires=todoapp.socket
 [Service]
 User=ec2-user
 WorkingDirectory=/opt/todoapp
-ExecStart=/home/ec2-user/.local/bin/poetry run flask run -h "0.0.0.0"
+EnvironmentFile=/opt/todoapp/.env
+Environment: "PATH=/home/ec2-user/.local/bin"
+ExecStart=poetry run gunicorn --bind 0.0.0.0:unix:todoapp.socket -m 007 wsgi:app
