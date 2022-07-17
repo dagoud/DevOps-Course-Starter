@@ -6,4 +6,4 @@ Requires=todoapp.socket
 User=ec2-user
 WorkingDirectory=/opt/todoapp
 EnvironmentFile=/opt/todoapp/.env
-ExecStart=/home/ec2-user/.local/bin/poetry run gunicorn --bind 0.0.0.0:80 --log-file /var/log/todoapp.log wsgi:app
+ExecStart=/home/ec2-user/.local/bin/poetry run gunicorn --bind 0.0.0.0:80 wsgi:app --access-logfile /var/log/todoapp-access.log --error-logfile /var/webapps/api/log/todoapp-error.log
