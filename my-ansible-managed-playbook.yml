@@ -72,6 +72,13 @@
       mode: '777'
     become: yes
 
+  - name : Make todoapp a git safe directory on Managed Node
+    ansible.builtin.shell: git config --global --add safe.directory /opt/todoapp
+    register: todoapp_safedir
+  
+  - debug:  
+      var: todoapp_safedir.stdout_lines
+
   - name: Checkout latest version of todoapp
     ansible.builtin.git:
       repo: 'https://github.com/dagoud/DevOps-Course-Starter.git' 
@@ -136,9 +143,28 @@
   - debug:  
       var: cat_todoappservice.stdout_lines
   
+  - name: Copy todoapp.socket to etc/systemd dir
+    ansible.builtin.shell: 
+      cmd: cp todoapp.socket /etc/systemd/system/todoapp.socket
+      chdir: /opt/todoapp
+    become: yes
+
+  - name : Print contents to confirm systemd todoapp.socket written correctly
+    ansible.builtin.shell: 
+      cmd: cat todoapp.socket
+      chdir: /etc/systemd/system
+    register: cat_todoappsocket
+
+  - debug:  
+      var: cat_todoappsocket.stdout_lines
+  
   - name: Start todo app via systemd
     ansible.builtin.systemd:
       name: todoapp.service
       state: started
       daemon_reload: yes
     become: yes
+    register: todoapp_gunicorn
+  
+  - debug:  
+      var: todoapp_gunicorn.stdout_lines
