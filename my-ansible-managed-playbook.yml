@@ -1,0 +1,190 @@
+# TODO: add .env.j2 to Controller VM?
+# connect to a 2nd .ini file for installing git and pulling repo on controller node
+
+
+- name: Connect to managed nodes
+  hosts: my-managed-nodes
+  remote_user: ec2-user
+
+  # TODO: stretch goal - try out Ansible_vault
+  vars_prompt:
+    - name: flask_env
+      prompt: What is the flask_env?
+      private: no
+      default: development
+
+    - name: secret_key
+      prompt: What is your secret key?
+      default: secret_key
+
+    - name: trello_token
+      prompt: What is your trello api token?
+      default: trello_token
+
+  tasks:
+  - name : Install Git and Python3 on Managed Node
+    ansible.builtin.yum:
+      name: 
+        - git
+        - python3
+      state: latest
+    become: yes
+  
+  - name : Capture Git version on Managed Node
+    ansible.builtin.shell: git version
+    register: git_version
+  
+  - debug:  
+      var: git_version.stdout_lines
+
+  - name : Capture Python3 version on Managed Node
+    ansible.builtin.shell: python3 --version
+    register: py_version
+  
+  - debug:  
+      var: py_version.stdout_lines
+
+  - name : Capture Curl version on Managed Node
+    ansible.builtin.shell: curl --version
+    register: curl_version
+  
+  - debug:  
+      var: curl_version.stdout_lines
+
+  - name: Install Poetry
+    ansible.builtin.shell: curl -sSL https://install.python-poetry.org | python3 -
+    args: 
+      creates: ~/.local/bin/poetry
+
+  - name : Capture Poetry version on Managed Node
+    ansible.builtin.shell: poetry --version
+    register: poetry_version
+    environment:
+      PATH: "~/.local/bin:{{ ansible_env.PATH }}"
+  
+  - debug:  
+      var: poetry_version.stdout_lines
+
+  - name: Create todoapp directory
+    ansible.builtin.file:
+      path: /opt/todoapp
+      state: directory
+      mode: '777'
+    become: yes
+
+  - name : Make todoapp a git safe directory on Managed Node
+    ansible.builtin.shell: git config --global --add safe.directory /opt/todoapp
+    register: todoapp_safedir
+  
+  - debug:  
+      var: todoapp_safedir.stdout_lines
+
+  - name: Checkout latest version of todoapp
+    ansible.builtin.git:
+      repo: 'https://github.com/dagoud/DevOps-Course-Starter.git' 
+      dest: /opt/todoapp
+      version: module-4/exercise
+    
+  - name : Change dir to todoapp on Managed Node
+    ansible.builtin.shell: git status
+    args:
+      chdir: /opt/todoapp
+    register: todoapp_gs
+  
+  - debug:  
+      var: todoapp_gs.stdout_lines
+
+  - name : Poetry install dependencies for todoapp
+    ansible.builtin.shell: poetry install
+    args:
+      chdir: /opt/todoapp
+    register: todoapp_install
+    environment:
+      PATH: "~/.local/bin:{{ ansible_env.PATH }}"
+
+  - debug:  
+      var: todoapp_install.stdout_lines
+
+  - name: Template a .env file to /opt/todoapp/.env
+    ansible.builtin.template:
+      src: ~/.env.j2
+      dest: /opt/todoapp/.env
+  
+  - name : Print .env contents to confirm written variables correctly
+    ansible.builtin.shell: 
+      cmd: cat /opt/todoapp/.env
+      chdir: /
+    register: cat_dotenv
+
+  - debug:  
+      var: cat_dotenv.stdout_lines
+
+  - name: print git status - confirm .env not displayed
+    ansible.builtin.shell: git status
+    args:
+      chdir: /opt/todoapp
+    register: println_gs
+  
+  - debug:  
+      var: println_gs.stdout_lines
+
+  - name: Copy todoapp.service to etc/systemd dir
+    ansible.builtin.shell: 
+      cmd: cp todoapp.service /etc/systemd/system/todoapp.service
+      chdir: /opt/todoapp
+    become: yes
+  
+  - name : Print contents to confirm systemd todoapp.service written correctly
+    ansible.builtin.shell: 
+      cmd: cat todoapp.service
+      chdir: /etc/systemd/system
+    register: cat_todoappservice
+
+  - debug:  
+      var: cat_todoappservice.stdout_lines
+  
+  - name: Copy todoapp.socket to etc/systemd dir
+    ansible.builtin.shell: 
+      cmd: cp todoapp.socket /etc/systemd/system/todoapp.socket
+      chdir: /opt/todoapp
+    become: yes
+
+  - name : Print contents to confirm systemd todoapp.socket written correctly
+    ansible.builtin.shell: 
+      cmd: cat todoapp.socket
+      chdir: /etc/systemd/system
+    register: cat_todoappsocket
+
+  - debug:  
+      var: cat_todoappsocket.stdout_lines
+      
+  - name: Create todoapp-error.log file
+    ansible.builtin.file:
+      path: /var/log/todoapp-error.log
+      state: touch
+      owner: ec2-user
+      mode: '644'
+      modification_time: preserve
+      access_time: preserve
+    become: yes
+    
+  - name: Create todoapp-access.log file
+    ansible.builtin.file:
+      path: /var/log/todoapp-access.log
+      state: touch
+      owner: ec2-user
+      mode: '644'
+      modification_time: preserve
+      access_time: preserve
+    become: yes
+
+  - name: Start todo app via systemd
+    ansible.builtin.systemd:
+      name: todoapp.service
+      state: started
+      daemon_reload: yes
+    become: yes
+    register: todoapp_gunicorn
+  
+  - debug:  
+      var: todoapp_gunicorn.stdout_lines
