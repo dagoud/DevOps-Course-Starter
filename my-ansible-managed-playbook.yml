@@ -157,7 +157,27 @@
 
   - debug:  
       var: cat_todoappsocket.stdout_lines
-  
+      
+  - name: Create todoapp-error.log file
+    ansible.builtin.file:
+      path: /var/log/todoapp-error.log
+      state: touch
+      owner: ec2-user
+      mode: '644'
+      modification_time: preserve
+      access_time: preserve
+    become: yes
+    
+  - name: Create todoapp-access.log file
+    ansible.builtin.file:
+      path: /var/log/todoapp-access.log
+      state: touch
+      owner: ec2-user
+      mode: '644'
+      modification_time: preserve
+      access_time: preserve
+    become: yes
+
   - name: Start todo app via systemd
     ansible.builtin.systemd:
       name: todoapp.service
