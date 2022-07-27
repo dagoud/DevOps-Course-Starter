@@ -3,7 +3,7 @@ Description=My To-Do App
 Requires=todoapp.socket
 
 [Service]
-User=ec2-user
+User=todoapp-user1
 WorkingDirectory=/opt/todoapp
 EnvironmentFile=/opt/todoapp/.env
 ExecStart=/home/todoapp-user1/.local/bin/poetry run gunicorn --bind 0.0.0.0:80 --error-logfile /var/log/todoapp-error.log --access-logfile /var/log/todoapp-access.log wsgi:app
