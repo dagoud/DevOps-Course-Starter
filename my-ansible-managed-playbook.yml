@@ -6,7 +6,6 @@
   hosts: my-managed-nodes
   remote_user: ec2-user
 
-  # TODO: stretch goal - try out Ansible_vault
   vars_prompt:
     - name: flask_env
       prompt: What is the flask_env?
@@ -107,7 +106,8 @@
       dest: /opt/todoapp
       version: module-4/exercise
     register: todoapp_git_checkout
-    
+    become: yes
+
   - debug:  
       var: todoapp_git_checkout.stdout_lines
 
@@ -225,3 +225,4 @@
   
   - debug:  
       var: todoapp_gunicorn.stdout_lines
+      
