@@ -109,7 +109,7 @@
   - debug:  
       var: todoapp_git_checkout.stdout_lines
 
-  - name : Change dir to todoapp on Managed Node
+  - name : Change dir to todoapp and run git status to confirm on correct branch
     ansible.builtin.shell: git status
     args:
       chdir: /opt/todoapp
